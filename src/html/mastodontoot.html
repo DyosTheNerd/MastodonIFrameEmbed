@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html style="overscroll-behavior-y:none">
+
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.4.1/purify.min.js"></script>
+    <script>
+        const asyncProcess = async function () {
+
+            try {
+                var url_string = window.location.href;
+                var url = new URL(url_string);
+                var tootId = url.searchParams.get("tootId");
+                console.log(tootId);
+                var serverAddress = url.searchParams.get("serverAddress");
+                console.log(serverAddress);
+
+                const res = await fetch(`https://${serverAddress}/api/v1/statuses/${tootId}`, {
+                    method: "get"
+                });
+
+                responseJson = await res.json();
+                console.log(responseJson);
+
+                const cleanHTML = DOMPurify.sanitize(responseJson.content);
+                document.getElementById("content").innerHTML = cleanHTML;
+
+                document.getElementById("createdAt").innerText = responseJson.created_at;
+                document.getElementById("editedAt").innerText = responseJson.edited_at;
+                document.getElementById("favoritesCount").innerText = responseJson.favourites_count;
+                document.getElementById("repliesCount").innerText = responseJson.replies_count;
+                document.getElementById("displayName").innerText = responseJson.account.display_name;
+                document.getElementById("username").innerHTML = DOMPurify.sanitize(`<a href="https://${serverAddress}/@${responseJson.account.username}">@${responseJson.account.username}@${serverAddress}</a>`);
+                document.getElementById("avatar").innerHTML = DOMPurify.sanitize(`<img src="${responseJson.account.avatar}" alt="${responseJson.account.username}'s Avatar" style="width:48px;height:48px;">`);
+                const onclickfn = function () {
+                    return openInNewTab(`https://${serverAddress}/@${responseJson.account.username}`)
+                }
+                document.getElementById("outerLink").onclick = onclickfn
+            }
+            catch (err) {
+                console.log(err)
+            }
+        }
+
+        asyncProcess()
+
+        function openInNewTab(url) {
+            window.open(url, '_blank').focus();
+        }
+
+
+    </script>
+</head>
+
+<body>
+
+    <div id="outerLink" style="border: 1px solid;border-color: rgb(207,217,222);border-radius: 12px;">
+        <div style="padding: 15px;">
+            <div id="authorInfo"
+                style="padding-bottom: 12px;flex-direction: row; -webkit-box-orient:horizontal; -webkit-box-direction:normal; display:flex">
+                <div id="avatar" style="height: 48px;width: 48px"></div>
+                <div id="authorNameInfo" style="margin-left:4px;">
+                    <div id="displayName"></div>
+                    <div id="username"></div>
+                </div>
+                <a style="align-items:stretch; margin-left: auto">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24">
+                        <g id="g4544" transform="matrix(0.0948236,0,0,0.0948236,2,20.724234)">
+                            <path style="fill:#2b90d9" inkscape:connector-curvature="0" id="path827"
+                                d="m 211.80734,-68.922263 c -3.18125,16.36625 -28.4925,34.2775 -57.5625,37.74875 -15.15875,1.80875 -30.08375,3.47125 -45.99875,2.74125 -26.027495,-1.1925 -46.564995,-6.2125 -46.564995,-6.2125 0,2.53375 0.15625,4.94625 0.46875,7.2025 3.38375,25.6862505 25.47,27.22500049 46.391245,27.94250049 21.11625,0.72250001 39.91875,-5.20624999 39.91875,-5.20624999 l 0.8675,19.0899995 c 0,0 -14.77,7.93125 -41.08125,9.39 -14.508745,0.7975 -32.523745,-0.365 -53.506245,-5.91875 C 9.232345,5.8102372 1.406095,-42.698513 0.20859498,-91.918512 c -0.365,-14.613748 -0.14,-28.393748 -0.14,-39.918748 0,-50.33 32.97625002,-65.0825 32.97625002,-65.0825 16.6275,-7.63625 45.15875,-10.8475 74.819995,-11.09 h 0.72875 c 29.66125,0.2425 58.21125,3.45375 74.8375,11.09 0,0 32.975,14.7525 32.975,65.0825 0,0 0.41375,37.133748 -4.59875,62.914997" />
+                            <path style="fill:#ffffff" inkscape:connector-curvature="0" id="path829"
+                                d="m 177.50984,-143.40009 v 60.941249 h -24.14375 v -59.149999 c 0,-12.46875 -5.24625,-18.7975 -15.74,-18.7975 -11.6025,0 -17.4175,7.5075 -17.4175,22.3525 v 32.37625 H 96.20734 v -32.37625 c 0,-14.845 -5.81625,-22.3525 -17.41875,-22.3525 -10.49375,0 -15.74,6.32875 -15.74,18.7975 v 59.149999 H 38.90484 v -60.941249 c 0,-12.455 3.17125,-22.3525 9.54125,-29.675 6.56875,-7.3225 15.17125,-11.07625 25.85,-11.07625 12.355,0 21.71125,4.74875 27.8975,14.2475 l 6.01375,10.08125 6.015,-10.08125 c 6.185,-9.49875 15.54125,-14.2475 27.8975,-14.2475 10.6775,0 19.28,3.75375 25.85,11.07625 6.36875,7.3225 9.54,17.22 9.54,29.675" />
+                        </g>
+                    </svg>
+
+                </a>
+            </div>
+
+
+            <div style="font-size: 20px;" id="content"></div>
+            <div id="createdAt"></div>
+            <div id="editedAt"></div>
+            <div id="favoritesCount"></div>
+            <div id="repliesCount"></div>
+        </div>
+    </div>
+</body>
+
+</html>
